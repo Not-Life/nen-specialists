@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specialist Brainstorm</title>
+<meta name="description" content="Help brainstorm Specialist Nen abilities for a Hunter x Hunter Slay the Spire 2 mod.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a short hub with the 特 seal and two equal choices side by side. */
+:root{
+  --bg:#eaf0f4; --paper:#ffffff; --ink:#15202a; --muted:#5a6774; --line:#d0d9e1;
+  --water:#1d6fb0; --water-soft:#dceaf6;
+  --display:"Dela Gothic One","Arial Black",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0d1319; --paper:#141d25; --ink:#e6ecf1; --muted:#98a6b3; --line:#29363f; --water:#5ba8eb; --water-soft:#15283a; color-scheme:dark; }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:760px;margin:0 auto;padding:32px 16px 56px;display:grid;gap:22px}
+header{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.seal{width:76px;height:76px;border-radius:50%;background:var(--water);color:#fff;display:grid;place-items:center;font:44px/1 serif;box-shadow:0 0 0 5px var(--paper),0 0 0 7px var(--water)}
+h1{font:30px/1.12 var(--display);margin:0;text-wrap:balance}
+.sub{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.intro{max-width:65ch;margin:0}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+a.choice{display:grid;gap:10px;align-content:start;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;color:inherit;text-decoration:none}
+a.choice:hover{border-color:var(--water)}
+a.choice:focus-visible{outline:2px solid var(--water);outline-offset:3px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--water)}
+a.choice h2{font:20px/1.2 var(--display);margin:0}
+a.choice p{margin:0;color:var(--muted)}
+.go{font-weight:600;color:var(--water)}
+footer{color:var(--muted);font-size:13px;text-align:center}
+@media (max-width:560px){ .choices{grid-template-columns:1fr} header{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="seal" aria-hidden="true">特</div>
+    <div>
+      <h1>Help design a Specialist</h1>
+      <p class="sub">For Life's Hunter x Hunter character mod for Slay the Spire 2.</p>
+    </div>
+  </header>
+  <p class="intro">Every run starts with a Water Divination test that decides your aura type. Specialists are the rare result, and their powers break the normal rules. Pick either one below, or do both. Your answers get sent to Life at the end.</p>
+  <div class="choices">
+    <a class="choice" href="quiz.html">
+      <div class="kicker">About 5 minutes</div>
+      <h2>Water Divination quiz</h2>
+      <p>Questions about anime you like and powers you think are cool. No Hunter x Hunter knowledge needed. You get a just-for-fun aura type at the end.</p>
+      <span class="go">Take the quiz →</span>
+    </a>
+    <a class="choice" href="form.html">
+      <div class="kicker">Have an idea already?</div>
+      <h2>Ability idea form</h2>
+      <p>Describe up to 3 Specialist abilities of your own: what they do, how they should feel, and what they cost.</p>
+      <span class="go">Open the form →</span>
+    </a>
+  </div>
+  <footer>Fan project. Hunter x Hunter belongs to Yoshihiro Togashi.</footer>
+</main>
+</body>
+</html>

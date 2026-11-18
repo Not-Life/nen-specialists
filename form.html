@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design a Specialist</title>
+<meta name="description" content="Help design Specialist Nen abilities for a Hunter x Hunter Slay the Spire 2 mod.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one narrow column like a Hunter Exam answer sheet; the 特 (Specialization) seal anchors the header. */
+:root{
+  --bg:#eef2f5;
+  --paper:#ffffff;
+  --ink:#16202a;
+  --muted:#5b6875;
+  --line:#d3dbe2;
+  --spec:#1263a8;      /* Specialization blue from the Nen chart */
+  --spec-soft:#e3eef8;
+  --vow:#b3261e;       /* the price of a vow */
+  --vow-soft:#f8e7e5;
+  --display:"Dela Gothic One","Arial Black",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0e141a; --paper:#151e26; --ink:#e7edf2; --muted:#9aa8b4; --line:#2a3743;
+    --spec:#5aa7ea; --spec-soft:#16293a; --vow:#f0857c; --vow-soft:#331a19;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 64px;display:grid;gap:20px}
+header{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.seal{width:76px;height:76px;border-radius:50%;background:var(--spec);color:#fff;display:grid;place-items:center;font:44px/1 serif;box-shadow:0 0 0 5px var(--paper),0 0 0 7px var(--spec)}
+h1{font:28px/1.15 var(--display);margin:0;text-wrap:balance;letter-spacing:.01em}
+.sub{margin:4px 0 0;color:var(--muted)}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:14px}
+.card h2{font:18px/1.2 var(--display);margin:0;text-wrap:balance}
+.card p{margin:0;max-width:65ch}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--spec)}
+.rules{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.rules li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+.rules b.k{font:16px/28px serif;width:28px;height:28px;border-radius:7px;background:var(--spec-soft);color:var(--spec);text-align:center}
+label.q{display:grid;gap:6px;font-weight:600}
+.hint{font-weight:400;color:var(--muted);font-size:14px}
+input[type=text],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;width:100%}
+textarea{min-height:92px;resize:vertical}
+input[type=text]:focus,textarea:focus{outline:2px solid var(--spec);outline-offset:1px;border-color:transparent}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:8px}
+legend{font-weight:600;padding:0;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{display:inline-block;padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:14px;background:var(--paper);user-select:none}
+.chip input:checked+span{background:var(--spec);border-color:var(--spec);color:#fff}
+.chip input:focus-visible+span{outline:2px solid var(--spec);outline-offset:2px}
+.idea{border-left:4px solid var(--spec)}
+.idea-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.price{background:var(--vow-soft);border-radius:10px;padding:12px;display:grid;gap:8px}
+.price label.q{color:var(--vow)}
+.price .examples{font-size:14px;color:var(--muted)}
+button{font:600 15px/1 var(--body);border-radius:10px;padding:12px 16px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+button.primary{background:var(--spec);border-color:var(--spec);color:#fff}
+button.ghost{background:transparent}
+button.small{padding:7px 10px;font-size:13px}
+button:focus-visible{outline:2px solid var(--spec);outline-offset:2px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.status{font-size:14px;color:var(--muted);min-height:1.2em}
+.req{color:var(--vow)}
+#preview{font:13px/1.5 var(--mono);white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px;max-height:260px;overflow:auto;display:none}
+footer{color:var(--muted);font-size:13px;text-align:center}
+@media (max-width:420px){ header{grid-template-columns:1fr} .seal{width:60px;height:60px;font-size:34px} h1{font-size:24px} }
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="seal" aria-hidden="true">特</div>
+    <div>
+      <h1>Design a Specialist</h1>
+      <p class="sub">Help make the rarest Nen type in a Hunter x Hunter mod for Slay the Spire 2.</p>
+    </div>
+  </header>
+
+  <section class="card" aria-labelledby="what">
+    <div class="kicker">The setup</div>
+    <h2 id="what">You start every run as a new Nen user</h2>
+    <p>A Water Divination test at the start of the run decides your aura type. Specialists are the rare result: their abilities break the normal rules. In the show that's Chrollo stealing abilities, Neon's fortune telling, and Kurapika's Emperor Time.</p>
+    <ul class="rules">
+      <li><b class="k" aria-hidden="true">念</b><span><strong>Nen</strong> is a resource you build up and spend on abilities. Energy is your physical stamina.</span></li>
+      <li><b class="k" aria-hidden="true">誓</b><span><strong>Limitations and vows</strong> make abilities stronger in exchange for a rule or a risk.</span></li>
+      <li><b class="k" aria-hidden="true">特</b><span><strong>Your idea doesn't need to be from the show.</strong> Anything you'd think is cool works: from another anime, a game, a myth, or your own head.</span></li>
+    </ul>
+    <p class="hint">Takes about 5 minutes. Rough ideas are great.</p>
+  </section>
+
+  <form id="form" novalidate>
+    <div style="display:grid;gap:20px">
+      <section class="card">
+        <label class="q" for="name">Your name <span class="req" aria-hidden="true">*</span>
+          <input type="text" id="name" name="name" autocomplete="given-name" required>
+        </label>
+      </section>
+
+      <div id="ideas" style="display:grid;gap:20px"></div>
+      <div class="actions"><button type="button" class="ghost" id="addIdea">+ Add another ability idea</button></div>
+
+      <section class="card" aria-labelledby="taste">
+        <div class="kicker">A few quick ones</div>
+        <h2 id="taste">Your taste</h2>
+
+        <fieldset>
+          <legend>Favorite Specialist from the show</legend>
+          <div class="chips" id="fav"></div>
+          <input type="text" id="favOther" aria-label="Other favorite" placeholder="Someone else? Type them here" hidden>
+        </fieldset>
+
+        <fieldset>
+          <legend>How should becoming a Specialist work?</legend>
+          <div class="chips" id="rarity"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>What do you like doing in card games? <span class="hint">Pick any</span></legend>
+          <div class="chips" id="styles"></div>
+        </fieldset>
+
+        <label class="q" for="extra">Anything else?
+          <span class="hint">Other ideas for the mod, characters you want, things you'd hate to see.</span>
+          <textarea id="extra"></textarea>
+        </label>
+      </section>
+
+      <section class="card" aria-labelledby="send">
+        <div class="kicker">Last step</div>
+        <h2 id="send">Send your answers to Life</h2>
+        <p>Nothing is saved on this site. Tap <strong>Send my answers</strong> to share them in a text, Discord, or any app. If that doesn't open anything, use <strong>Copy</strong> and paste them into a message.</p>
+        <div class="actions">
+          <button type="submit" class="primary" id="shareBtn">Send my answers</button>
+          <button type="button" id="copyBtn">Copy</button>
+          <button type="button" class="ghost" id="showBtn">Show text</button>
+        </div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+        <pre id="preview" tabindex="0"></pre>
+      </section>
+    </div>
+  </form>
+
+  <footer><a href="./">Home</a> · <a href="quiz.html">Water Divination quiz</a><br>Fan project. Hunter x Hunter belongs to Yoshihiro Togashi. Your draft stays in this browser until you send it.</footer>
+</main>
+
+<script>
+(function(){
+  const THEMES=["Fortune and foresight","Copying or stealing","Time","Luck and gambling","Rules and contracts","Summons and companions","Transformation","Mind games","Sacrifice and blood","Curses and fate","Dreams","Memory","Mimicry","Puppets","Reversal"];
+  const FEELS=["One huge moment","Snowballs over time","High-risk gamble","Clever combos","Messes with enemies","Helps teammates (co-op)"];
+  const FAVS=["Chrollo (Skill Hunter)","Neon (Lovely Ghostwriter)","Kurapika (Emperor Time)","Alluka / Nanika","Neferpitou (Doctor Blythe)","Haven't seen it","Other"];
+  const RARITY=["Super rare, like the show","Rare but reachable","Its own choice at the start"];
+  const STYLES=["Huge hits","Poison and debuffs","Combos and engines","Tanking","Summons","Chaos and randomness","Cycling and discarding","Supporting co-op","Risky self-damage"];
+  const MAX_IDEAS=3;
+  const KEY="nen-specialist-draft-v1";
+
+  const $=s=>document.querySelector(s);
+  const ideasEl=$("#ideas");
+  let ideaCount=0;
+
+  function chipGroup(container,name,options,type){
+    container.innerHTML="";
+    options.forEach((opt,i)=>{
+      const id=name+"-"+i;
+      const wrap=document.createElement("label");
+      wrap.className="chip"; wrap.htmlFor=id;
+      const inp=document.createElement("input");
+      inp.type=type; inp.name=name; inp.value=opt; inp.id=id;
+      const sp=document.createElement("span"); sp.textContent=opt;
+      wrap.append(inp,sp); container.append(wrap);
+    });
+  }
+
+  function addIdea(){
+    if(ideaCount>=MAX_IDEAS) return;
+    const n=++ideaCount;
+    const sec=document.createElement("section");
+    sec.className="card idea"; sec.dataset.idea=n;
+    sec.innerHTML=`
+      <div class="idea-head">
+        <div><div class="kicker">Ability idea ${n}</div><h2>${n===1?"Your Specialist ability":"Another ability"}</h2></div>
+        ${n>1?'<button type="button" class="small ghost" data-remove>Remove</button>':""}
+      </div>
+      <label class="q" for="i${n}-name">Ability name
+        <span class="hint">Like "Skill Hunter" or "Lovely Ghostwriter". Make one up.</span>
+        <input type="text" id="i${n}-name">
+      </label>
+      <label class="q" for="i${n}-what">What does it do?${n===1?' <span class="req" aria-hidden="true">*</span>':""}
+        <span class="hint">Describe it like you'd explain it to a friend. Don't worry about game rules.</span>
+        <textarea id="i${n}-what" placeholder="Example: Every time an enemy uses a move on me, I write it in a book. Later I can open the book and use their move once."></textarea>
+      </label>
+      <label class="q" for="i${n}-from">Inspired by <span class="hint">(optional) a character, game, myth, anything</span>
+        <input type="text" id="i${n}-from">
+      </label>
+      <fieldset>
+        <legend>What's it about? <span class="hint">Pick any</span></legend>
+        <div class="chips" id="i${n}-themes"></div>
+      </fieldset>
+      <fieldset>
+        <legend>How should it feel to play?</legend>
+        <div class="chips" id="i${n}-feel"></div>
+      </fieldset>
+      <div class="price">
+        <label class="q" for="i${n}-price">The price
+          <span class="hint">Strong Nen always has a rule or a risk. What's the catch?</span>
+          <textarea id="i${n}-price" placeholder="Example: I can only copy a move after it hits me. If I use the book too much, I lose HP."></textarea>
+        </label>
+        <div class="examples">Show examples: Kurapika's chain only works on the Phantom Troupe or he dies. Emperor Time drains his life while active.</div>
+      </div>
+      <label class="q" for="i${n}-card">If it were a card, what might it say? <span class="hint">(optional)</span>
+        <input type="text" id="i${n}-card" placeholder="Example: Copy the enemy's intent. Exhaust.">
+      </label>`;
+    ideasEl.append(sec);
+    chipGroup(sec.querySelector(`#i${n}-themes`),`i${n}-themes`,THEMES,"checkbox");
+    chipGroup(sec.querySelector(`#i${n}-feel`),`i${n}-feel`,FEELS,"radio");
+    const rm=sec.querySelector("[data-remove]");
+    if(rm) rm.addEventListener("click",()=>{ sec.remove(); renumber(); save(); });
+    $("#addIdea").hidden = ideasEl.children.length>=MAX_IDEAS;
+    return sec;
+  }
+  function renumber(){
+    ideaCount=ideasEl.children.length;
+    $("#addIdea").hidden = ideaCount>=MAX_IDEAS;
+  }
+
+  function checked(name){ return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(i=>i.value); }
+
+  function collect(){
+    const ideas=[...ideasEl.children].map(sec=>{
+      const n=sec.dataset.idea;
+      return {
+        name:$(`#i${n}-name`).value.trim(),
+        what:$(`#i${n}-what`).value.trim(),
+        from:$(`#i${n}-from`).value.trim(),
+        themes:checked(`i${n}-themes`),
+        feel:checked(`i${n}-feel`)[0]||"",
+        price:$(`#i${n}-price`).value.trim(),
+        card:$(`#i${n}-card`).value.trim()
+      };
+    });
+    let fav=checked("fav")[0]||"";
+    if(fav==="Other") fav=$("#favOther").value.trim()||"Other";
+    return {name:$("#name").value.trim(),ideas,fav,rarity:checked("rarity")[0]||"",styles:checked("styles"),extra:$("#extra").value.trim()};
+  }
+
+  function asText(d){
+    const L=[];
+    L.push("SPECIALIST IDEAS from "+(d.name||"(no name)"));
+    d.ideas.forEach((x,i)=>{
+      if(!x.what && !x.name) return;
+      L.push("");
+      L.push(`#${i+1} ${x.name||"Unnamed ability"}`);
+      if(x.what) L.push("What it does: "+x.what);
+      if(x.from) L.push("Inspired by: "+x.from);
+      if(x.themes.length) L.push("About: "+x.themes.join(", "));
+      if(x.feel) L.push("Feels like: "+x.feel);
+      if(x.price) L.push("The price: "+x.price);
+      if(x.card) L.push("Card text: "+x.card);
+    });
+    L.push("");
+    if(d.fav) L.push("Favorite Specialist: "+d.fav);
+    if(d.rarity) L.push("Becoming a Specialist: "+d.rarity);
+    if(d.styles.length) L.push("Likes: "+d.styles.join(", "));
+    if(d.extra) L.push("Other thoughts: "+d.extra);
+    return L.join("\n");
+  }
+
+  function validate(d){
+    if(!d.name){ $("#name").focus(); return "Add your name first."; }
+    if(!d.ideas.some(x=>x.what)){ const t=document.querySelector("#ideas textarea"); if(t) t.focus(); return "Describe at least one ability."; }
+    return "";
+  }
+
+  // Draft saving (this browser only)
+  function save(){
+    try{
+      const d=collect(); d._ideas=ideasEl.children.length;
+      localStorage.setItem(KEY,JSON.stringify(d));
+    }catch(e){}
+  }
+  function restore(){
+    let d=null;
+    try{ d=JSON.parse(localStorage.getItem(KEY)||"null"); }catch(e){}
+    const count=Math.max(1,Math.min(MAX_IDEAS,(d&&d._ideas)||1));
+    for(let i=0;i<count;i++) addIdea();
+    if(!d) return;
+    $("#name").value=d.name||"";
+    (d.ideas||[]).forEach((x,i)=>{
+      const n=i+1; if(!$(`#i${n}-what`)) return;
+      $(`#i${n}-name`).value=x.name||""; $(`#i${n}-what`).value=x.what||"";
+      $(`#i${n}-from`).value=x.from||""; $(`#i${n}-price`).value=x.price||""; $(`#i${n}-card`).value=x.card||"";
+      (x.themes||[]).forEach(v=>{ const el=document.querySelector(`input[name="i${n}-themes"][value="${CSS.escape(v)}"]`); if(el) el.checked=true; });
+      if(x.feel){ const el=document.querySelector(`input[name="i${n}-feel"][value="${CSS.escape(x.feel)}"]`); if(el) el.checked=true; }
+    });
+    const setOne=(name,v)=>{ if(!v) return; const el=document.querySelector(`input[name="${name}"][value="${CSS.escape(v)}"]`); if(el) el.checked=true; else if(name==="fav"){ const o=document.querySelector('input[name="fav"][value="Other"]'); o.checked=true; $("#favOther").hidden=false; $("#favOther").value=v; } };
+    setOne("fav",d.fav); setOne("rarity",d.rarity);
+    (d.styles||[]).forEach(v=>setOne("styles",v));
+    $("#extra").value=d.extra||"";
+    if(checked("fav")[0]==="Other") $("#favOther").hidden=false;
+  }
+
+  function status(msg){ $("#status").textContent=msg; }
+  function showPreview(text){ const p=$("#preview"); p.textContent=text; p.style.display="block"; }
+
+  async function copyText(text){
+    try{ await navigator.clipboard.writeText(text); return true; }
+    catch(e){
+      try{ const ta=document.createElement("textarea"); ta.value=text; document.body.append(ta); ta.select(); const ok=document.execCommand("copy"); ta.remove(); return ok; }catch(_){ return false; }
+    }
+  }
+
+  chipGroup($("#fav"),"fav",FAVS,"radio");
+  chipGroup($("#rarity"),"rarity",RARITY,"radio");
+  chipGroup($("#styles"),"styles",STYLES,"checkbox");
+  restore();
+
+  $("#fav").addEventListener("change",()=>{ $("#favOther").hidden = checked("fav")[0]!=="Other"; });
+  $("#addIdea").addEventListener("click",()=>{ const s=addIdea(); if(s) s.querySelector("input").focus(); save(); });
+  $("#form").addEventListener("input",save);
+  $("#form").addEventListener("change",save);
+
+  $("#form").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const d=collect(); const err=validate(d);
+    if(err){ status(err); return; }
+    const text=asText(d);
+    if(navigator.share){
+      try{ await navigator.share({title:"My Specialist ideas",text}); status("Sent. Thanks!"); return; }
+      catch(ex){ if(ex && ex.name==="AbortError"){ status("Not sent. Tap Send again when you're ready."); return; } }
+    }
+    const ok=await copyText(text);
+    showPreview(text);
+    status(ok?"Your answers are copied. Paste them into a message to Life.":"Select the text below, copy it, and send it to Life.");
+  });
+  $("#copyBtn").addEventListener("click",async()=>{
+    const d=collect(); const err=validate(d);
+    if(err){ status(err); return; }
+    const text=asText(d); const ok=await copyText(text);
+    showPreview(text);
+    status(ok?"Copied. Paste it into a message to Life.":"Select the text below, copy it, and send it to Life.");
+  });
+  $("#showBtn").addEventListener("click",()=>{ showPreview(asText(collect())); status(""); });
+})();
+</script>
+</body>
+</html>

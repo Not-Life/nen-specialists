@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Water Divination Quiz</title>
+<meta name="description" content="A quick anime quiz that helps brainstorm Specialist Nen abilities for a Hunter x Hunter Slay the Spire 2 mod.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one question per screen inside a "glass" card; the water level rises as you answer. */
+:root{
+  --bg:#eaf0f4;
+  --paper:#ffffff;
+  --ink:#15202a;
+  --muted:#5a6774;
+  --line:#d0d9e1;
+  --water:#1d6fb0;
+  --water-soft:#dceaf6;
+  --vow:#b3261e;
+  --display:"Dela Gothic One","Arial Black",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0d1319; --paper:#141d25; --ink:#e6ecf1; --muted:#98a6b3; --line:#29363f;
+    --water:#5ba8eb; --water-soft:#15283a; --vow:#f0857c; color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:680px;margin:0 auto;padding:24px 16px 56px;display:grid;gap:18px}
+header{display:flex;gap:14px;align-items:center}
+.glass{flex:none;width:46px;height:58px;border:3px solid var(--water);border-top:0;border-radius:0 0 12px 12px;position:relative;overflow:hidden;background:var(--paper)}
+.glass .lvl{position:absolute;left:0;right:0;bottom:0;background:var(--water);transition:height .4s ease}
+.glass .leaf{position:absolute;left:50%;width:16px;height:8px;margin-left:-8px;background:#3d9a4b;border-radius:8px 0;transition:bottom .4s ease}
+h1{font:24px/1.15 var(--display);margin:0;text-wrap:balance}
+.sub{margin:2px 0 0;color:var(--muted);font-size:14px}
+.bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--water);width:0;transition:width .3s ease}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:16px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--water)}
+.card h2{font:20px/1.25 var(--display);margin:0;text-wrap:balance}
+.card p{margin:0;max-width:65ch}
+.hint{color:var(--muted);font-size:14px}
+input[type=text],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 12px;width:100%}
+textarea{min-height:110px;resize:vertical}
+input[type=text]:focus,textarea:focus{outline:2px solid var(--water);outline-offset:1px;border-color:transparent}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips.stack{display:grid;gap:8px}
+.chip{position:relative;display:block}
+.chip input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chip span{display:block;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--paper);user-select:none}
+.chips:not(.stack) .chip span{border-radius:999px;padding:7px 12px;font-size:14px}
+.chip small{display:block;color:var(--muted);font-size:13px}
+.chip input:checked+span{background:var(--water);border-color:var(--water);color:#fff}
+.chip input:checked+span small{color:#e6f0fa}
+.chip input:focus-visible+span{outline:2px solid var(--water);outline-offset:2px}
+.nav{display:flex;justify-content:space-between;gap:10px;align-items:center}
+button{font:600 15px/1 var(--body);border-radius:10px;padding:12px 18px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+button.primary{background:var(--water);border-color:var(--water);color:#fff}
+button.ghost{background:transparent}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+.status{font-size:14px;color:var(--muted);min-height:1.2em}
+.err{color:var(--vow)}
+.reveal{border-left:4px solid var(--water)}
+.reveal .type{font:30px/1.1 var(--display);color:var(--water)}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+#out{font:13px/1.5 var(--mono);white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:12px;max-height:300px;overflow:auto;display:none;margin:0}
+footer{color:var(--muted);font-size:13px;text-align:center}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="glass" aria-hidden="true"><div class="lvl" id="lvl" style="height:20%"></div><div class="leaf" id="leaf" style="bottom:20%"></div></div>
+    <div>
+      <h1>Water Divination Quiz</h1>
+      <p class="sub">Help brainstorm Specialist abilities for a Hunter x Hunter Slay the Spire 2 mod.</p>
+    </div>
+  </header>
+  <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+  <div id="stage"></div>
+  <footer><a href="./">Home</a> · <a href="form.html">Ability idea form</a><br>Fan project. Hunter x Hunter belongs to Yoshihiro Togashi. Your answers stay in this browser until you send them.</footer>
+</main>
+
+<script>
+(function(){
+const Q=[
+ {id:"intro",type:"intro"},
+ {id:"name",type:"text",kicker:"First",title:"What's your name?",required:true},
+ {id:"anime",type:"multi",other:true,kicker:"Your watchlist",title:"Which anime have you watched and liked?",hint:"Pick all that apply.",
+  options:["Hunter x Hunter","Jujutsu Kaisen","Naruto","One Piece","Bleach","Demon Slayer","My Hero Academia","Chainsaw Man","Attack on Titan","Fullmetal Alchemist","JoJo's Bizarre Adventure","Death Note","Mob Psycho 100","Frieren","Solo Leveling","Dragon Ball","Code Geass","Overlord","Re:Zero","Black Clover","Fire Force","Tokyo Ghoul","Kakegurui","Bungo Stray Dogs","Fate series"]},
+ {id:"favPower",type:"long",required:true,kicker:"The big one",title:"What's your favorite power or ability from any anime?",hint:"Name it, say who uses it, and what makes it cool to you.",placeholder:"Example: Gojo's Infinity, because nothing can touch him unless he lets it."},
+ {id:"broken",type:"long",kicker:"Overpowered",title:"What's the most broken ability you've seen in a show?",hint:"The one that made you say \"that's not fair.\"",placeholder:"Example: Kira's Death Note. Write a name and the person dies."},
+ {id:"underrated",type:"long",kicker:"Hidden gem",title:"Is there a weird or underrated ability you wish got more screen time?",hint:"Optional. Strange is good here."},
+ {id:"hooks",type:"multi",kicker:"What pulls you in",title:"Which kinds of powers do you enjoy most?",hint:"Pick up to 3.",max:3,
+  options:[
+   ["Copying or stealing powers","Sharingan, Skill Hunter"],
+   ["Rules, contracts and vows","Death Note, binding vows, Chain Jail"],
+   ["Time and fate","Re:Zero's Return by Death, King Crimson"],
+   ["Luck and gambling","Kakegurui, Hakari's Domain"],
+   ["Summons and companions","Megumi's shikigami, stands"],
+   ["Transformation and forms","Bankai, Super Saiyan, Gear 5"],
+   ["Mind and control","Geass, Illumi's needles"],
+   ["Space and territory","Domain Expansion, Room (Law)"],
+   ["Trading something away","Equivalent exchange, Kurapika's Emperor Time"],
+   ["Seeing the future","Neon's fortunes, Observation Haki"]]},
+ {id:"scenario",type:"long",required:true,kicker:"Scenario",title:"You're cornered by a boss with almost no HP left. Your secret ability finally activates. What happens?",hint:"Describe the moment. It can be anything.",placeholder:"Example: Time freezes and every hit I took this fight gets thrown back at the boss at once."},
+ {id:"price",type:"single",kicker:"Every power has a price",title:"For a huge power boost, what would you be willing to give up?",hint:"In Hunter x Hunter, risky rules make Nen stronger.",
+  options:[
+   ["My health","Losing HP or max HP every time"],
+   ["My time","It only lasts a few turns, then I'm drained"],
+   ["Control","It's random. Sometimes great, sometimes useless"],
+   ["My freedom","I can only use it on certain enemies or in certain situations"],
+   ["My deck","It clogs my deck with curses or junk"],
+   ["My team","It hurts or weakens my co-op teammates"]]},
+ {id:"style",type:"single",kicker:"How you play",title:"In a fight, you're the one who…",
+  options:[
+   ["Plans everything","Sets up a perfect combo, then wins in one turn"],
+   ["Rolls the dice","Takes the gamble and lives with the outcome"],
+   ["Reads the opponent","Counters, copies, and turns their moves against them"],
+   ["Overwhelms","Pure pressure, hit after hit"],
+   ["Holds the line","Outlasts everyone and protects the team"]]},
+ {id:"cardgames",type:"single",kicker:"Card games",title:"How much do you play deckbuilders or card games?",
+  options:[["A lot","Slay the Spire, Balatro, Magic, and so on"],["Some","I've played a few"],["Barely","Mostly here for the anime"]]},
+ {id:"rarity",type:"single",kicker:"Specialists",title:"In the mod, your aura type is random. How should becoming a Specialist work?",
+  options:[["Super rare","Like the show, it should feel special"],["Rare but reachable","Low chance, plus an event that can turn you into one"],["A free choice","Let players pick it"]]},
+ {id:"idea",type:"long",kicker:"Your turn",title:"Got a Specialist ability idea of your own?",hint:"Optional. Give it a name, say what it does, and what its catch is.",placeholder:"Example: \"Ledger\": I record every card the enemy makes me discard. Once per fight I can play them all for free, but I lose 1 max HP for each."},
+ {id:"extra",type:"long",kicker:"Last one",title:"Anything else you'd want in a Hunter x Hunter card game?",hint:"Optional. Characters, mechanics, things you'd hate to see."},
+ {id:"done",type:"done"}
+];
+
+const TYPE_FROM_HOOK={
+ "Copying or stealing powers":"Specialization","Rules, contracts and vows":"Conjuration","Time and fate":"Specialization",
+ "Luck and gambling":"Transmutation","Summons and companions":"Conjuration","Transformation and forms":"Enhancement",
+ "Mind and control":"Manipulation","Space and territory":"Emission","Trading something away":"Enhancement","Seeing the future":"Specialization"};
+const TYPE_TEXT={
+ Enhancement:["The water rises over the rim.","You make yourself stronger and trust your own body."],
+ Transmutation:["The water's taste changes.","You turn your aura into something tricky and unpredictable."],
+ Emission:["The water changes color.","You throw your power outward and control the space around you."],
+ Conjuration:["Impurities appear in the water.","You build tools, rules and companions out of aura."],
+ Manipulation:["The leaf starts to move.","You'd rather control the fight than brawl in it."],
+ Specialization:["Something else happens entirely.","Your power doesn't fit the rules. You're a Specialist."]
+};
+
+const KEY="nen-quiz-v1";
+let A={}; let step=0;
+try{ const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s){A=s.A||{}; step=Math.min(s.step||0,Q.length-1);} }catch(e){}
+const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify({A,step})); }catch(e){} };
+
+const stage=document.getElementById("stage");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const opt=o=>Array.isArray(o)?{label:o[0],desc:o[1]}:{label:o,desc:""};
+
+function progress(){
+  const total=Q.length-2; const n=Math.max(0,Math.min(total,step-1));
+  const pct=step>=Q.length-1?100:Math.round(n/total*100);
+  document.getElementById("bar").style.width=pct+"%";
+  const lvl=20+pct*0.65;
+  document.getElementById("lvl").style.height=lvl+"%";
+  document.getElementById("leaf").style.bottom=lvl+"%";
+}
+
+function render(){
+  progress(); save();
+  const q=Q[step];
+  if(q.type==="intro") return renderIntro();
+  if(q.type==="done") return renderDone();
+  const num=`Question ${step} of ${Q.length-2}`;
+  let body="";
+  if(q.type==="text") body=`<input type="text" id="f" value="${esc(A[q.id]||"")}" autocomplete="given-name">`;
+  if(q.type==="long") body=`<textarea id="f" placeholder="${esc(q.placeholder||"")}">${esc(A[q.id]||"")}</textarea>`;
+  if(q.type==="multi"||q.type==="single"){
+    const isMulti=q.type==="multi"; const cur=A[q.id]||(isMulti?[]:"");
+    const stack=q.options.some(o=>Array.isArray(o));
+    body=`<div class="chips ${stack?"stack":""}" role="group" aria-label="${esc(q.title)}">`+q.options.map((o,i)=>{
+      const {label,desc}=opt(o); const on=isMulti?cur.includes(label):cur===label;
+      return `<label class="chip"><input type="${isMulti?"checkbox":"radio"}" name="f" value="${esc(label)}" ${on?"checked":""}><span>${esc(label)}${desc?`<small>${esc(desc)}</small>`:""}</span></label>`;
+    }).join("")+`</div>`;
+    if(q.other) body+=`<input type="text" id="other" placeholder="Others? Type them here" value="${esc(A[q.id+"Other"]||"")}">`;
+  }
+  stage.innerHTML=`<section class="card" aria-live="polite">
+    <div class="kicker">${esc(q.kicker||"")} · ${num}</div>
+    <h2 id="qt">${esc(q.title)}</h2>
+    ${q.hint?`<p class="hint">${esc(q.hint)}</p>`:""}
+    ${body}
+    <div class="status err" id="err"></div>
+    <div class="nav">
+      <button type="button" class="ghost" id="back">Back</button>
+      <button type="button" class="primary" id="next">${q.required?"Next":"Next"}</button>
+    </div>
+  </section>`;
+  const f=document.getElementById("f"); if(f) f.focus();
+  if(q.max){
+    stage.querySelectorAll('input[name="f"]').forEach(inp=>inp.addEventListener("change",()=>{
+      const on=[...stage.querySelectorAll('input[name="f"]:checked')];
+      if(on.length>q.max){ inp.checked=false; document.getElementById("err").textContent=`Pick up to ${q.max}.`; }
+      else document.getElementById("err").textContent="";
+    }));
+  }
+  if(f && q.type==="text") f.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); next(); } });
+  document.getElementById("back").onclick=()=>{ capture(); step--; render(); };
+  document.getElementById("next").onclick=next;
+}
+
+function capture(){
+  const q=Q[step]; if(!q||q.type==="intro"||q.type==="done") return;
+  if(q.type==="text"||q.type==="long") A[q.id]=document.getElementById("f").value.trim();
+  if(q.type==="multi") A[q.id]=[...stage.querySelectorAll('input[name="f"]:checked')].map(i=>i.value);
+  if(q.type==="single"){ const c=stage.querySelector('input[name="f"]:checked'); A[q.id]=c?c.value:""; }
+  if(q.other) A[q.id+"Other"]=document.getElementById("other").value.trim();
+}
+function next(){
+  capture(); const q=Q[step];
+  const v=A[q.id];
+  if(q.required && (!v || (Array.isArray(v)&&!v.length))){ document.getElementById("err").textContent="This one needs an answer."; return; }
+  step++; render();
+}
+
+function renderIntro(){
+  stage.innerHTML=`<section class="card">
+    <div class="kicker">About 5 minutes</div>
+    <h2>Help design the rarest Nen type</h2>
+    <p>Life is making a Hunter x Hunter character for Slay the Spire 2. Each run starts with a Water Divination test that decides your aura type. Specialists are the rare result: their powers break the normal rules.</p>
+    <p>This quiz asks about anime you like and powers you think are cool, so we can borrow ideas from other shows too. There are no wrong answers, and you don't need to know Hunter x Hunter.</p>
+    <div class="nav"><span></span><button type="button" class="primary" id="start">${Object.keys(A).length?"Continue":"Start"}</button></div>
+  </section>`;
+  document.getElementById("start").onclick=()=>{ step=1; render(); };
+}
+
+function guessType(){
+  const tally={};
+  (A.hooks||[]).forEach(h=>{ const t=TYPE_FROM_HOOK[h]; if(t) tally[t]=(tally[t]||0)+1; });
+  if(A.style==="Rolls the dice") tally.Transmutation=(tally.Transmutation||0)+1;
+  if(A.style==="Reads the opponent") tally.Manipulation=(tally.Manipulation||0)+1;
+  if(A.style==="Overwhelms") tally.Enhancement=(tally.Enhancement||0)+1;
+  if(A.style==="Plans everything") tally.Conjuration=(tally.Conjuration||0)+1;
+  if(A.style==="Holds the line") tally.Enhancement=(tally.Enhancement||0)+1;
+  const best=Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
+  return best?best[0]:"Enhancement";
+}
+
+function buildPrompt(){
+  const t=guessType();
+  const list=(v,o)=>{ const a=[...(v||[])]; if(o) a.push(o); return a.length?a.join(", "):"(none)"; };
+  const L=[];
+  L.push("I'm designing Specialist Nen abilities for my Hunter x Hunter character mod for Slay the Spire 2. A friend took a brainstorming quiz I made. Their answers are below, followed by my own notes.");
+  L.push("");
+  L.push("Mod context:");
+  L.push("- The player is an original character becoming a Nen user. A Water Divination event at the start of the run randomly assigns an aura type. Specialist is the rare result, and an event can also turn you into one.");
+  L.push("- Nen is a secondary resource (like the Regent's Stars) spent on abilities. Energy is physical stamina.");
+  L.push("- The four principles are card roles: Ren generates Nen, Ten defends and stores it, Zetsu recovers, Hatsu spends it.");
+  L.push("- Limitations and vows are rest-site enchantments: more power for a downside.");
+  L.push("- I've only watched the Hunter x Hunter anime, so no manga spoilers.");
+  L.push("");
+  L.push("Please:");
+  L.push("1. Pick out abilities from the shows they mentioned that would make good Specialist inspiration, and say why.");
+  L.push("2. Propose 2 or 3 Specialist ability concepts that fit their taste, each with a limitation or vow.");
+  L.push("3. Sketch how each could play in Slay the Spire 2: the core mechanic, a few example cards with Nen and energy costs, and a downside.");
+  L.push("4. Flag anything that might be hard to build in the mod creator.");
+  L.push("");
+  L.push("--- Quiz answers from "+(A.name||"a friend")+" ---");
+  L.push("Anime they like: "+list(A.anime,A.animeOther));
+  L.push("Favorite power: "+(A.favPower||"(skipped)"));
+  L.push("Most broken ability: "+(A.broken||"(skipped)"));
+  L.push("Underrated ability: "+(A.underrated||"(skipped)"));
+  L.push("Powers they enjoy: "+list(A.hooks));
+  L.push("Boss scenario: "+(A.scenario||"(skipped)"));
+  L.push("Price they'd pay for power: "+(A.price||"(skipped)"));
+  L.push("Fighting style: "+(A.style||"(skipped)"));
+  L.push("Card game experience: "+(A.cardgames||"(skipped)"));
+  L.push("How Specialists should work: "+(A.rarity||"(skipped)"));
+  L.push("Their own Specialist idea: "+(A.idea||"(none)"));
+  L.push("Anything else: "+(A.extra||"(none)"));
+  L.push("Quiz's fun aura guess: "+t);
+  L.push("");
+  L.push("--- My notes (Life) ---");
+  L.push("[Add your thoughts here: what you like, what you'd change, and how you'd implement it.]");
+  return L.join("\n");
+}
+
+function renderDone(){
+  const t=guessType(); const [line,desc]=TYPE_TEXT[t];
+  stage.innerHTML=`<section class="card reveal">
+    <div class="kicker">Your Water Divination (just for fun)</div>
+    <p>${esc(line)}</p>
+    <div class="type">${esc(t)}</div>
+    <p>${esc(desc)}</p>
+  </section>
+  <section class="card">
+    <div class="kicker">Last step</div>
+    <h2>Send your answers to Life</h2>
+    <p>Nothing is saved on this site. Tap <strong>Send to Life</strong> and pick Messages, Discord, or any app. If nothing opens, tap <strong>Copy</strong> and paste it into a message.</p>
+    <div class="actions">
+      <button type="button" class="primary" id="share">Send to Life</button>
+      <button type="button" id="copy">Copy</button>
+      <button type="button" class="ghost" id="show">Show text</button>
+    </div>
+    <div class="status" id="st" role="status" aria-live="polite"></div>
+    <pre id="out" tabindex="0"></pre>
+    <div class="nav"><button type="button" class="ghost" id="back">Change answers</button><button type="button" class="ghost" id="reset">Start over</button></div>
+  </section>`;
+  const st=m=>document.getElementById("st").textContent=m;
+  const show=txt=>{ const o=document.getElementById("out"); o.textContent=txt; o.style.display="block"; };
+  const copy=async txt=>{ try{ await navigator.clipboard.writeText(txt); return true; }catch(e){ try{ const ta=document.createElement("textarea"); ta.value=txt; document.body.append(ta); ta.select(); const ok=document.execCommand("copy"); ta.remove(); return ok; }catch(_){ return false; } } };
+  document.getElementById("share").onclick=async()=>{
+    const txt=buildPrompt();
+    if(navigator.share){
+      try{ await navigator.share({title:"Specialist quiz answers",text:txt}); st("Sent. Thanks!"); return; }
+      catch(ex){ if(ex&&ex.name==="AbortError"){ st("Not sent yet. Tap Send to Life when you're ready."); return; } }
+    }
+    const ok=await copy(txt); show(txt);
+    st(ok?"Copied. Paste it into a message to Life.":"Select the text below, copy it, and send it to Life.");
+  };
+  document.getElementById("copy").onclick=async()=>{ const txt=buildPrompt(); const ok=await copy(txt); show(txt); st(ok?"Copied. Paste it into a message to Life.":"Select the text below, copy it, and send it to Life."); };
+  document.getElementById("show").onclick=()=>show(buildPrompt());
+  document.getElementById("back").onclick=()=>{ step=Q.length-2; render(); };
+  document.getElementById("reset").onclick=()=>{ A={}; step=0; save(); render(); };
+}
+
+render();
+})();
+</script>
+</body>
+</html>
