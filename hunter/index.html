@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hunter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a design codex. Overview first, then one section per aura type in hexagon order, each with cards grouped by role and its relics. */
+:root{
+  --bg:#f1f3f2;
+  --paper:#ffffff;
+  --ink:#171c1f;
+  --muted:#5d676d;
+  --line:#d6dcdf;
+  --accent:#1f6f5c;
+  --enh:#2f8a3a; --tra:#8a3fb8; --emi:#c99a12; --con:#c23434; --man:#6f7378; --spe:#1f6fb8;
+  --warn-bg:#fdf3dc; --warn-ink:#7a5205;
+  --display:"Dela Gothic One","Arial Black",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101417; --paper:#171d21; --ink:#e7ecee; --muted:#9aa6ad; --line:#2a343a; --accent:#5fc4a8;
+    --enh:#6cc77a; --tra:#c08ae6; --emi:#e8c24f; --con:#f07a7a; --man:#a9adb3; --spe:#6fb0ee;
+    --warn-bg:#3a2e10; --warn-ink:#f2d58c; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101417; --paper:#171d21; --ink:#e7ecee; --muted:#9aa6ad; --line:#2a343a; --accent:#5fc4a8;
+  --enh:#6cc77a; --tra:#c08ae6; --emi:#e8c24f; --con:#f07a7a; --man:#a9adb3; --spe:#6fb0ee;
+  --warn-bg:#3a2e10; --warn-ink:#f2d58c; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body)}
+a{color:var(--accent)}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;gap:28px}
+header.hero{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+.seal{width:84px;height:84px;border-radius:14px;background:var(--ink);color:var(--paper);display:grid;place-items:center;font:44px/1 serif}
+h1{font:36px/1.05 var(--display);margin:0;letter-spacing:.01em}
+.tag{margin:6px 0 0;color:var(--muted);max-width:62ch}
+nav.jump{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px}
+nav.jump a{font:500 13px/1 var(--body);text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--paper);padding:7px 11px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
+nav.jump a i{width:9px;height:9px;border-radius:50%;display:inline-block}
+section.block{display:grid;gap:16px;scroll-margin-top:64px}
+h2{font:24px/1.15 var(--display);margin:0;text-wrap:balance;display:flex;gap:10px;align-items:center}
+h2 .dot{width:14px;height:14px;border-radius:50%}
+h3{font:600 15px/1.3 var(--body);margin:6px 0 0;text-transform:none}
+h3 small{font-weight:400;color:var(--muted)}
+.lede{margin:0;color:var(--muted);max-width:70ch}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:10px}
+.panel p{margin:0;max-width:72ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.status{display:inline-block;font:500 12px/1 var(--mono);padding:5px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line);color:var(--muted);vertical-align:middle}
+.status.draft{background:var(--warn-bg);color:var(--warn-ink);border-color:transparent}
+.note{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:12px 14px;font-size:14px}
+.note ul{margin:6px 0 0;padding-left:18px}
+table.t{border-collapse:collapse;width:100%;font-size:14px}
+table.t th,table.t td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+table.t td.num{font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.card{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--c,var(--line));border-radius:10px;padding:12px;display:grid;gap:7px;align-content:start}
+.card .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card .name{font-weight:600}
+.card .chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font:500 11px/1 var(--mono);padding:4px 6px;border-radius:5px;border:1px solid var(--line);color:var(--muted);background:var(--bg)}
+.chip.e{color:var(--ink)}
+.chip.n{color:var(--c,var(--accent));border-color:currentColor;background:transparent}
+.card .fx{font-size:14px;margin:0}
+.relics .card{border-top-style:double;border-top-width:5px}
+.hex{width:100%;max-width:420px}
+.muted{color:var(--muted)}
+.count{font:500 12px/1 var(--mono);color:var(--muted)}
+footer{color:var(--muted);font-size:13px}
+@media (max-width:520px){ header.hero{grid-template-columns:1fr} h1{font-size:30px} }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+<header class="hero">
+  <div class="seal" aria-hidden="true">念</div>
+  <div>
+    <h1>The Hunter</h1>
+    <p class="tag">A Slay the Spire 2 character inspired by Hunter x Hunter. You play an original Hunter who becomes a Nen user, and a Water Divination at the start of each run decides what kind.</p>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Sections" id="jump"></nav>
+
+<section class="block" id="overview">
+  <h2>Who the Hunter is</h2>
+  <div class="grid2">
+    <div class="panel">
+      <h3>The character</h3>
+      <p>Not Gon or any other character from the show. The Hunter is your own Hunter, learning Nen from scratch. Cards are inspired by the show's ideas and techniques without being any one character's move.</p>
+      <p>Anime-only: nothing here draws on manga content.</p>
+    </div>
+    <div class="panel">
+      <h3>Start of the run</h3>
+      <p>You begin with the <strong>Empty Glass</strong>. A <strong>Water Divination</strong> event, replacing Neow, turns it into one of six aura relics at random. Becoming a Specialist is rare, and a later event can also make you one.</p>
+    </div>
+    <div class="panel">
+      <h3>Two resources</h3>
+      <p><strong>Energy</strong> is physical stamina. <strong>Nen</strong> is aura, a second resource built on the Regent's Stars and renamed. Cards can cost energy, Nen, or both.</p>
+      <p>Every aura relic gives <strong>3 Nen at the start of combat</strong> and <strong>1 Nen at the end of each turn</strong>.</p>
+    </div>
+    <div class="panel">
+      <h3>The four principles</h3>
+      <p><strong>Ren</strong> turns aura up, <strong>Ten</strong> holds it in, <strong>Zetsu</strong> shuts it off, and <strong>Hatsu</strong> uses it. Ren, Ten and Zetsu are starter cards that build Nen. Hatsu becomes your aura type's own basic ability.</p>
+    </div>
+    <div class="panel">
+      <h3>Card rewards</h3>
+      <p>Your aura relic replaces the normal card reward with a pick of 1 from 3. The pool is your type's normal cards and signatures plus both neighbors' normal cards. Signatures never leave their type. Rares come from elites and bosses.</p>
+      <p>Conjuration and Manipulation swap their Specialization neighbor for Specialist cards of their own. Specialists only draw their own deck and pull other cards through their own mechanic.</p>
+    </div>
+    <div class="panel">
+      <h3>Limitations and vows</h3>
+      <p>At rest sites you can make a vow: a card gets a vow enchantment that makes it stronger with a built-in downside, like losing HP when played or adding a curse to your deck. Vow options live on your aura relic.</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>The aura hexagon <small>connected types share cards</small></h3>
+      <svg class="hex" viewBox="0 0 420 330" role="img" aria-labelledby="hexT">
+        <title id="hexT">Aura types in hexagon order: Enhancement, Transmutation, Conjuration, Specialization, Manipulation, Emission</title>
+        <g stroke="currentColor" stroke-width="1.5" opacity=".35" fill="none" style="color:var(--muted)">
+          <polygon points="210,40 340,110 340,220 210,290 80,220 80,110"/>
+        </g>
+        <g font-family="IBM Plex Sans, system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">
+          <circle cx="210" cy="40" r="22" fill="var(--enh)"/><text x="210" y="45" fill="#fff">強</text><text x="210" y="80" fill="var(--ink)">Enhancement</text>
+          <circle cx="340" cy="110" r="22" fill="var(--tra)"/><text x="340" y="115" fill="#fff">変</text><text x="340" y="150" fill="var(--ink)">Transmutation</text>
+          <circle cx="340" cy="220" r="22" fill="var(--con)"/><text x="340" y="225" fill="#fff">具</text><text x="340" y="260" fill="var(--ink)">Conjuration</text>
+          <circle cx="210" cy="290" r="22" fill="var(--spe)"/><text x="210" y="295" fill="#fff">特</text><text x="210" y="326" fill="var(--ink)">Specialization</text>
+          <circle cx="80" cy="220" r="22" fill="var(--man)"/><text x="80" y="225" fill="#fff">操</text><text x="80" y="260" fill="var(--ink)">Manipulation</text>
+          <circle cx="80" cy="110" r="22" fill="var(--emi)"/><text x="80" y="115" fill="#fff">放</text><text x="80" y="150" fill="var(--ink)">Emission</text>
+        </g>
+      </svg>
+    </div>
+    <div class="panel">
+      <h3>Main archetype per type</h3>
+      <div class="scroll"><table class="t">
+        <thead><tr><th>Type</th><th>Archetype</th><th>Neighbors</th></tr></thead>
+        <tbody id="archTable"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Reward pool sizes</h3>
+      <div class="scroll"><table class="t">
+        <thead><tr><th>Aura type</th><th>Pool</th><th class="num">Cards</th></tr></thead>
+        <tbody>
+          <tr><td>Enhancement, Transmutation, Emission</td><td>20 own + 10 signatures + 20 + 20 from neighbors</td><td class="num">70</td></tr>
+          <tr><td>Conjuration</td><td>20 own + 10 signatures + 20 Transmutation + 10 Conjurer Specialist cards</td><td class="num">60</td></tr>
+          <tr><td>Manipulation</td><td>20 own + 10 signatures + 20 Emission + 10 Manipulator Specialist cards</td><td class="num">60</td></tr>
+          <tr><td>Specialization</td><td>Specialist deck + 10 signatures, plus its own pulling mechanic</td><td class="num">~40</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted" style="font-size:13px">Each type also has about 6 rares, drawn after elites and bosses.</p>
+    </div>
+    <div class="panel">
+      <h3>Build plan</h3>
+      <div class="scroll"><table class="t">
+        <thead><tr><th>Phase</th><th>Content</th><th class="num">Cards</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Starter cards, shared techniques, Enhancement, Transmutation, Emission</td><td class="num">~120</td></tr>
+          <tr><td>2</td><td>Conjuration and Manipulation, plus their Specialist cards</td><td class="num">~72</td></tr>
+          <tr><td>3</td><td>Specialist deck and its pulling mechanic</td><td class="num">~56</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted" style="font-size:13px">About 275 cards in total, counting tokens and curses.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Statuses</h3>
+    <div class="scroll"><table class="t">
+      <thead><tr><th>Status</th><th>On</th><th>Rule</th><th>State</th></tr></thead>
+      <tbody id="statusTable"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<div id="types"></div>
+
+<section class="block" id="shared">
+  <h2><span class="dot" style="background:var(--ink)"></span>Shared</h2>
+  <p class="lede">Cards and relics every Hunter can have, whatever their aura type.</p>
+  <div id="sharedBody"></div>
+</section>
+
+<footer>Fan project. Hunter x Hunter belongs to Yoshihiro Togashi. Numbers are first-pass and will change after playtesting.</footer>
+</main>
+
+<script>
+const TYPES = [
+ {id:"enhancement",name:"Enhancement",kanji:"強",color:"var(--enh)",arch:"Strength and big attacks",nb:"Transmutation, Emission",
+  status:"Draft 2",statusNote:"Rework planned",
+  intro:"Slow, heavy 2 and 3 energy attacks that hit like trucks. Strength grows in unusual ways, and Backlash punishes enemies for hitting you. Light on Nen, which comes from fighting hard.",
+  notes:["Re-aim the cards facing Transmutation to cash in on Strength, Vulnerable and statuses that Transmutation now supplies.","Re-aim the cards facing Emission to work with orbs and Block, since Emission is now orbs and Block. Move the Nen-dump punches into the core or signatures.","Remove overlaps: applying Vulnerable (Bone Breaker) and plain Block now belong to the neighbors.","Trim Nen sources now that the aura relic gives 3 Nen plus 1 per turn."],
+  groups:[
+   {name:"Iron Body",sub:"core: big hits and Strength",cards:[
+    ["Heavy Blow","Attack","2","","Deal 14. Strength counts 3 times."],
+    ["Haymaker","Attack","3","","Deal 26. Gain 1 Nen."],
+    ["Crushing Slam","Attack","2","","Deal 12 to all enemies."],
+    ["Bone Breaker","Attack","2","","Deal 12. Apply 2 Vulnerable. Gain 1 Nen."],
+    ["Momentum","Attack","2","","Deal 10. Gain 1 Strength for each Attack you've played this turn."],
+    ["Morning Training","Power","1","","Gain 2 Strength."],
+    ["Surge","Skill","0","","Gain 4 Strength this turn. Next turn, gain 2 Weak."]]},
+   {name:"Tempered Body",sub:"faces Transmutation: defense and fuel",cards:[
+    ["Iron Hide","Skill","1","","Gain Block equal to 2× your Strength, +2 per Nen you have."],
+    ["Spiked Guard","Skill","1","","Gain 6 Block and 3 Backlash."],
+    ["Steel Skin","Power","1","","At the start of your turn, gain 2 Backlash. Whenever Backlash triggers, gain 1 Nen."],
+    ["Counter Stance","Skill","2","","Gain 10 Block, +2 per Nen you have. Whenever you're attacked this turn, gain 1 Strength and 1 Nen."],
+    ["Warm Up","Skill","1","","Gain 5 Block. Your next Attack that costs 2+ costs 1 less."],
+    ["Deep Breath","Skill","0","","Next turn, gain 2 energy and 2 Nen, and draw 1."],
+    ["Silent Guard","Skill","1","","Lose all your Nen. Gain Block equal to 3× the Nen lost. It doesn't expire next turn."],
+    ["Fighting Spirit","Power","1","","Whenever you play an Attack that costs 2+, gain 1 Nen."]]},
+   {name:"Nen Fists",sub:"faces Emission: Nen-powered hits",cards:[
+    ["Aura Knuckle","Attack","2","X","Deal 10, plus 5 for each Nen spent."],
+    ["Ko Punch","Attack","2","2","Deal 24. Gain 2 Vulnerable."],
+    ["Shockwave","Attack","2","1","Deal 10 to all enemies. If you've spent 3+ energy this turn, deal it again."],
+    ["Wind-Up","Skill","1","","Gain 2 Nen. Your next Attack that costs 2+ deals +6."],
+    ["Ren Burst","Skill","0","","Lose 2 HP. Gain 3 Nen."]]}],
+  sigs:[
+    ["Brawler's Pride","Power","1","","Your Attacks that cost 2+ deal +5."],
+    ["Heavyweight","Power","2","","The first Attack that costs 2+ each turn costs 1 less."],
+    ["Triple Form","Attack","2","2","Choose one: a crushing blow (deal 18, Strength counts 3 times), a wide burst (deal 12 to all enemies), or a cutting strike (deal 14, apply 2 Weak)."],
+    ["Meteor Fist","Attack","3","2","Deal 36."],
+    ["Everything Into One","Attack","3","X","Deal 15 for each Nen spent. Exhaust."],
+    ["Unrelenting","Attack","2","","Deal 16. If it kills, gain 2 energy and 3 Nen."],
+    ["Hunter's Training","Attack","2","","Deal 14. If it kills, gain 1 Strength for the rest of the run."],
+    ["Iron Fortress","Power","2","","At the end of your turn, gain Block equal to 3× your Strength."],
+    ["Forbidden Growth","Power","3","5","Vow: gain 10 Strength. Lose 10 max HP when combat ends."],
+    ["Limit Release","Skill","1","2","Double your Strength. Lose half your current HP. Exhaust."]],
+  rares:[
+    ["Titan's Grip","Power","3","","Your Attacks that cost 3+ hit twice."],
+    ["Earthshaker","Attack","4","","Deal 20 to all enemies and apply 2 Weak. Costs 1 less for each Attack you've played this turn."],
+    ["Breaking Point","Power","1","","While you're below half HP, your Nen gains are doubled and your Attacks deal +5."],
+    ["Thorned Mountain","Skill","2","","Gain 20 Block and 5 Backlash. You can't play Attacks this turn."],
+    ["Unbreakable Body","Power","2","3","The first time you'd die each combat, survive at 1 HP."],
+    ["Final Stand","Attack","3","","Deal damage equal to your missing HP. Exhaust."]],
+  parked:["Anger (Power, 1E): whenever you lose HP, gain 1 Strength and 1 Nen. Cut from signatures, may return."],
+  relics:[
+    ["Overflowing Glass","Aura relic","Start each combat with 3 Nen. Gain 1 Nen at the end of your turn. Runs Enhancement card rewards and holds the vow rest-site options."],
+    ["Training Weights","Common","The first time each combat you play an Attack that costs 3+, gain 2 Strength."],
+    ["Bandaged Knuckles","Uncommon","Whenever you play an Attack that costs 2+, gain 1 Nen and 3 Block."],
+    ["Iron Heart","Rare","Whenever you gain Strength, gain 1 Backlash."],
+    ["Heavy Body","Boss","Gain 1 energy each turn. You can't play more than 4 cards per turn."]]},
+
+ {id:"transmutation",name:"Transmutation",kanji:"変",color:"var(--tra)",arch:"Debuffs on enemies, buffs on yourself",nb:"Enhancement, Conjuration",
+  status:"Draft 1",statusNote:"Archetype updated, rework pending",
+  intro:"Your aura takes on properties. Transmutation puts statuses on enemies and buffs on itself, and supplies Strength and Vulnerable that Enhancement's big attacks cash in. Its debuffs also power Conjuration's summons.",
+  notes:["Add Strength and Vulnerable support for Enhancement.","Rework the cards facing Conjuration once Conjuration's summons are designed.","Check what Transmutation gets back from Enhancement's cards."],
+  groups:[
+   {name:"Properties",sub:"core",cards:[
+    ["Static Touch","Attack","1","","Deal 5. Apply 3 Shock."],
+    ["Sticky Aura","Skill","1","","Gain 5 Block. Apply 4 Stick."],
+    ["Arc Lash","Attack","1","1","Deal 2 four times."],
+    ["Discharge","Attack","1","1","Remove all Shock from an enemy and deal 3× that amount. If it had none, apply 3 Shock instead."],
+    ["Conductive","Skill","0","","Double an enemy's Shock. If it had none, apply 4. Exhaust."],
+    ["Snare","Attack","2","","Deal 8. Apply Stick equal to half the damage dealt."],
+    ["Change of Texture","Skill","1","","Convert all of an enemy's Stick into Shock, or its Shock into Stick."]]},
+   {name:"Speed",sub:"faces Enhancement",cards:[
+    ["Quickstep","Skill","1","","Gain 6 Block and 1 Speed."],
+    ["Flash Step","Skill","1","2","Gain 2 Speed. Your next Attack this turn is played twice."],
+    ["Afterimage","Skill","1","","Gain 4 Block. Whenever you play an Attack this turn, gain 2 Block."],
+    ["Rubber Body","Power","1","","Whenever you're attacked, apply 1 Stick to the attacker."],
+    ["Reflexes","Skill","0","","Draw 2. If you have Speed, gain 1 Nen."],
+    ["Light Feet","Power","1","","At the start of your turn, if you have Speed, gain 3 Block."],
+    ["Rapid Strikes","Attack","1","","Deal 3 three times. If you have Speed, hit once more."]]},
+   {name:"Charged Constructs",sub:"faces Conjuration",cards:[
+    ["Spark Coil","Skill","1","1","Channel a Spark orb. Passive: apply 1 Shock to a random enemy. Evoke: apply 3 Shock to all enemies."],
+    ["Gum Trap","Skill","1","","Channel a Gum orb. Passive: apply 2 Stick to a random enemy. Evoke: apply 6 Stick."],
+    ["Wired Thread","Attack","1","","Deal 6. Add a Thread to your hand (0E, apply 2 Stick, Ethereal)."],
+    ["Overload","Skill","1","1","Trigger the passive of each orb twice. If you have no orbs, draw 2."],
+    ["Static Field","Skill","2","","Apply 2 Shock to all enemies."],
+    ["Insulate","Skill","1","","Gain 4 Block for each orb you have."]]}],
+  sigs:[
+    ["Lightning Speed","Power","2","3","Gain 1 Speed each turn. Your first Attack each turn is played twice."],
+    ["Thunderclap","Skill","2","2","Apply 5 Shock to all enemies, then Discharge each one."],
+    ["Bungee Line","Skill","1","1","Apply 6 Stick. Next turn, deal damage equal to that enemy's Stick × 2."],
+    ["Chain Reaction","Power","1","","When an enemy's Shock triggers, apply 1 Shock to a random other enemy."],
+    ["Overcurrent","Skill","0","","Gain 3 Nen. Apply 2 Shock to yourself."],
+    ["Steel Thread","Attack","2","","Deal 14. Apply Stick equal to the unblocked damage."],
+    ["Living Battery","Power","1","","Whenever you apply Shock, gain 1 Block per stack."],
+    ["Taffy Shield","Skill","2","1","Gain 15 Block. Enemies that attack you this turn gain 4 Stick."],
+    ["Hyper Reflex","Skill","2","2","Gain 3 Speed. Draw 3."],
+    ["Total Discharge","Attack","3","X","Discharge every enemy. Deals +5 per Nen spent."]],
+  rares:[
+    ["Superconductor","Power","2","","Shock no longer goes down when it triggers."],
+    ["Glue Prison","Skill","2","2","An enemy with 10+ Stick skips its next attack."],
+    ["Storm Body","Power","3","","At the start of your turn, apply 2 Shock to all enemies."],
+    ["Static Overflow","Skill","1","","Gain Nen equal to the total Shock on all enemies ÷ 3."],
+    ["Mirror Texture","Skill","2","","Move all your debuffs onto an enemy. Exhaust."],
+    ["Quicksilver","Skill","2","","Gain 5 Speed. You can't gain Block this turn."]],
+  parked:[],
+  relics:[
+    ["Sweetened Water","Aura relic","Start each combat with 3 Nen. Gain 1 Nen at the end of your turn. Runs Transmutation card rewards and holds the vow rest-site options."]]},
+
+ {id:"emission",name:"Emission",kanji:"放",color:"var(--emi)",arch:"Orbs and Block",nb:"Enhancement, Manipulation",
+  status:"Draft 1",statusNote:"Outdated: archetype changed",
+  intro:"Aura sent away from the body without changing its properties. Emission is now built around orbs and Block: floating aura that works on its own, shields you, and covers Enhancement's slow turns and Manipulation's lack of defense.",
+  notes:["This list predates the switch to orbs and Block. It was built around Charge (delayed damage) and Nen release, and needs a full rework.","Charge may be removed or folded into orbs."],
+  groups:[
+   {name:"Barrage",sub:"old core",cards:[
+    ["Aura Shot","Attack","1","1","Deal 7 to a random enemy twice."],
+    ["Volley","Skill","1","","Apply 6 Charge to all enemies."],
+    ["Charged Shot","Skill","1","1","Apply 12 Charge."],
+    ["Fusillade","Skill","1","X","Apply 6 Charge per Nen spent."],
+    ["Scatter Shot","Attack","2","2","Deal 4 to a random enemy six times."],
+    ["Long Range","Skill","1","","Gain 6 Block. Apply 4 Charge."],
+    ["Deep Ren","Skill","1","","Gain 4 Nen."]]},
+   {name:"Nen Fists",sub:"old, faces Enhancement",cards:[
+    ["Distant Fist","Attack","2","2","Deal 10. Apply 10 Charge."],
+    ["Aura Cannon","Attack","2","X","Deal 8, plus 6 per Nen spent."],
+    ["Ren Overflow","Skill","0","","Gain 3 Nen. Lose 3 HP."],
+    ["Pulse Guard","Skill","1","1","Gain 10 Block. Next turn, gain 2 Nen."],
+    ["Shock Wave","Attack","2","1","Deal 9 to all enemies."],
+    ["Recoil Burst","Attack","1","1","Deal 8. Apply Charge equal to your Nen."],
+    ["Overheat","Skill","0","","Double your Nen. You can't gain Nen next turn."]]},
+   {name:"Remote Control",sub:"old, faces Manipulation",cards:[
+    ["Redirect","Skill","0","1","Move all Charge from one enemy to another. If there's none, deal 8."],
+    ["Detonate","Skill","1","1","All Charge triggers now. If no enemy has Charge, apply 6 Charge to all enemies."],
+    ["Homing Shot","Attack","1","","Deal 6 to the enemy with the most Charge (or a random enemy). Apply 4 Charge."],
+    ["Boomerang","Attack","1","","Deal 6. Return this card to your hand next turn."],
+    ["Guided Volley","Skill","1","2","Apply 5 Charge to an enemy three times."],
+    ["Recall","Skill","1","","Remove an enemy's Charge and gain 1 Nen per 4 removed (at least 1). Draw 1."]]}],
+  sigs:[
+    ["Overwhelming Release","Attack","3","X","Deal 12 per Nen spent to all enemies. Exhaust."],
+    ["Sustained Fire","Power","2","2","At the start of your turn, apply 4 Charge to a random enemy."],
+    ["Ren Reactor","Power","1","","At the end of your turn, gain 1 Nen."],
+    ["Grand Volley","Skill","2","3","Apply 15 Charge to all enemies."],
+    ["Amplifier","Power","1","1","Your Charge triggers deal +50%."],
+    ["Aura Bomb","Skill","1","2","Apply 20 Charge. If it kills, the Charge spreads to all enemies."],
+    ["Burnout","Skill","0","","Gain 6 Nen. At the end of this turn, lose all Nen."],
+    ["Barrier Blast","Skill","2","2","Gain 12 Block. Apply Charge equal to the Block gained."],
+    ["Long Echo","Power","1","","Charge triggers twice, but deals half each time."],
+    ["Final Flare","Attack","3","","Deal 5× all the Nen you've spent this combat. Exhaust."]],
+  rares:[
+    ["Endless Ren","Power","3","","Start each turn with +2 Nen. Your max HP drops by 2 each turn."],
+    ["Orbital Barrage","Skill","2","2","Apply 8 Charge to all enemies. Repeat next turn."],
+    ["Overcharged Core","Power","2","","Whenever you spend 3+ Nen on one card, gain 1 energy."],
+    ["Wide Release","Skill","1","","Your next card that applies Charge applies it to all enemies."],
+    ["Nen Reservoir","Power","1","","Keep up to 5 Nen into your next combat."],
+    ["Meltdown","Skill","0","","Lose all Nen. Apply 8 Charge per Nen lost to all enemies. Exhaust."]],
+  parked:[],
+  relics:[
+    ["Colored Water","Aura relic","Start each combat with 3 Nen. Gain 1 Nen at the end of your turn. Runs Emission card rewards and holds the vow rest-site options."]]},
+
+ {id:"conjuration",name:"Conjuration",kanji:"具",color:"var(--con)",arch:"Summons that block and summons that deal damage",nb:"Transmutation, plus its own Specialist cards",
+  status:"Not started",statusNote:"Phase 2",
+  intro:"Tangible conjured creatures and objects. Weak on its own, Conjuration scales off what its neighbors bring: summons that grow with enemy debuffs from Transmutation, and its own Specialist cards for strange effects like Doom.",
+  notes:["Ideas: a summon that tanks and a summon that deals damage. Your summon gets protection equal to the enemy's Vulnerable; your summon deals damage equal to the enemy's Doom.","Check whether a summon can receive Block. In Keroppi it couldn't, so summons may heal or gain HP instead.","Needs 10 Conjurer-only Specialist cards."],
+  groups:[],sigs:[],rares:[],parked:[],
+  relics:[["Clouded Water","Aura relic","Start each combat with 3 Nen. Gain 1 Nen at the end of your turn. Runs Conjuration card rewards and holds the vow rest-site options."]]},
+
+ {id:"manipulation",name:"Manipulation",kanji:"操",color:"var(--man)",arch:"Control, core still being decided",nb:"Emission, plus its own Specialist cards",
+  status:"Not started",statusNote:"Phase 2",
+  intro:"Controls things through a medium. Manipulation survives using Emission's Block and gets its damage from its own Specialist cards.",
+  notes:["Core still open: marking enemies and commanding them, or general control (Weak, changing intents, enemies hurting themselves).","Needs 10 Manipulator-only Specialist cards."],
+  groups:[],sigs:[],rares:[],parked:[],
+  relics:[["Drifting Leaf","Aura relic","Start each combat with 3 Nen. Gain 1 Nen at the end of your turn. Runs Manipulation card rewards and holds the vow rest-site options."]]},
+
+ {id:"specialization",name:"Specialization",kanji:"特",color:"var(--spe)",arch:"Rule-breaking abilities",nb:"None. Pulls cards its own way",
+  status:"On hold",statusNote:"Phase 3",
+  intro:"The rare result. Specialists only draw their own deck and signatures, and use their own mechanic to pull cards from the other types, like stealing a card, spinning for one, or choosing from any type.",
+  notes:["Ideas from friends: roulette weapons, a Greed Island style binder with hidden traps, wishes with escalating requests, a shadow duel (Enshroud), cute familiars that devour enemies, a mirror that reflects attacks.","A secret 2% rainbow result at Water Divination that upgrades and enchants your cards."],
+  groups:[],sigs:[],rares:[],parked:[],
+  relics:[["Strange Glass","Aura relic","Start each combat with 3 Nen. Gain 1 Nen at the end of your turn. Runs Specialist card rewards and holds the vow rest-site options."]]}
+];
+
+const STATUSES=[
+ ["Backlash","You","When an enemy attacks you, deal damage back equal to Backlash plus your Strength, once per attack. Lasts the whole combat.","Set"],
+ ["Shock","Enemy","When you hit it with an Attack, gain 1 Nen, then Shock goes down by 1. Discharge cashes in what's left for damage.","Draft"],
+ ["Stick","Enemy","Its attacks deal 1 less damage per stack. Halves at the end of its turn.","Draft"],
+ ["Speed","You","Draw 1 extra card at the start of your turn per stack. Loses 1 stack each turn.","Draft"],
+ ["Charge","Enemy","Takes damage equal to its Charge at the start of your next turn, then Charge is removed. Strength doesn't boost it.","Likely cut"]
+];
+
+const SHARED={
+ starters:[
+  ["Strike","Attack","1","","Deal 6. Three copies in the starter deck."],
+  ["Defend","Skill","1","","Gain 5 Block. Three copies in the starter deck."],
+  ["Ren","Skill","1","","Gain 3 Nen."],
+  ["Ten","Skill","1","","Gain 5 Block and 1 Nen. Gain 1 more Block for each Nen you have."],
+  ["Zetsu","Skill","0","","You can't spend Nen this turn. Next turn, gain 3 Nen and 1 energy."],
+  ["Hatsu","Varies","1","","Becomes your aura type's basic ability at Water Divination. Enhancement version: deal 8 and gain 1 Nen; if it's your only Attack this turn, gain 1 more."]],
+ techniques:[
+  ["In","Skill","1","","Lose all your Nen. You can't gain Nen this turn or next turn. In 2 turns, gain double the Nen lost, up to 12. Exhaust."]],
+ techniquesPlanned:"Gyo, Ken, Ko, En, Ryu and Shu, learned through training. Ideas: Gyo reads enemy intents, En senses each enemy, Ryu converts Block into Nen, Shu powers created cards.",
+ special:[
+  ["Hunter License","Power","0","","On hold. Innate. At the start of each turn, gain 1 Nen. At rest sites, use the Hunter Website to choose 1 of 3 of your type's signatures. Found through a secret Hunter Exam event or a rare shop slot."]],
+ relics:[
+  ["Empty Glass","Starter","Your starting relic. Water Divination turns it into one of the six aura relics."]]
+};
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function cardHTML(c,color){
+  const [name,type,e,n,fx]=c;
+  const chips=[`<span class="chip">${esc(type)}</span>`];
+  if(e!=="") chips.push(`<span class="chip e">${esc(e)} energy</span>`);
+  if(n!=="") chips.push(`<span class="chip n">${n==="X"?"X Nen":esc(n)+" Nen"}</span>`);
+  return `<article class="card" style="--c:${color}"><div class="top"><span class="name">${esc(name)}</span></div><div class="chips">${chips.join("")}</div><p class="fx">${esc(fx)}</p></article>`;
+}
+function relicHTML(r,color){
+  const [name,rar,fx]=r;
+  return `<article class="card" style="--c:${color}"><div class="top"><span class="name">${esc(name)}</span></div><div class="chips"><span class="chip">${esc(rar)}</span></div><p class="fx">${esc(fx)}</p></article>`;
+}
+function groupBlock(title,sub,cards,color){
+  if(!cards.length) return "";
+  return `<h3>${esc(title)} ${sub?`<small>· ${esc(sub)}</small>`:""} <span class="count">${cards.length}</span></h3><div class="cards">${cards.map(c=>cardHTML(c,color)).join("")}</div>`;
+}
+
+const jump=document.getElementById("jump");
+jump.innerHTML=`<a href="#overview"><i style="background:var(--ink)"></i>Overview</a>`+TYPES.map(t=>`<a href="#${t.id}"><i style="background:${t.color}"></i>${t.name}</a>`).join("")+`<a href="#shared"><i style="background:var(--muted)"></i>Shared</a>`;
+
+document.getElementById("archTable").innerHTML=TYPES.map(t=>`<tr><td><strong style="color:${t.color}">${t.name}</strong></td><td>${esc(t.arch)}</td><td class="muted">${esc(t.nb)}</td></tr>`).join("");
+document.getElementById("statusTable").innerHTML=STATUSES.map(s=>`<tr><td><strong>${esc(s[0])}</strong></td><td>${esc(s[1])}</td><td>${esc(s[2])}</td><td><span class="status ${s[3]==="Set"?"":"draft"}">${esc(s[3])}</span></td></tr>`).join("");
+
+document.getElementById("types").innerHTML=TYPES.map(t=>{
+  const normals=t.groups.reduce((a,g)=>a+g.cards.length,0);
+  const counts=`${normals} normal · ${t.sigs.length} signatures · ${t.rares.length} rares · ${t.relics.length} relics`;
+  const body = t.groups.length
+    ? t.groups.map(g=>groupBlock(g.name,g.sub,g.cards,t.color)).join("") + groupBlock("Signatures",`${t.name} only`,t.sigs,t.color) + groupBlock("Rares","elites and bosses",t.rares,t.color)
+    : `<div class="panel"><p class="muted">No cards designed yet.</p></div>`;
+  const parked = t.parked.length?`<h3>Parked <small>· cut for now</small></h3><div class="panel">${t.parked.map(p=>`<p>${esc(p)}</p>`).join("")}</div>`:"";
+  return `<section class="block" id="${t.id}">
+    <h2><span class="dot" style="background:${t.color}"></span>${t.name} <span class="muted" style="font-family:serif;font-size:22px">${t.kanji}</span></h2>
+    <div><span class="status ${t.status==="Draft 2"||t.status==="Draft 1"?"draft":""}">${esc(t.status)}</span> <span class="muted" style="font-size:13px">${esc(t.statusNote)}</span> <span class="count" style="margin-left:6px">${counts}</span></div>
+    <p class="lede"><strong style="color:var(--ink)">${esc(t.arch)}.</strong> ${esc(t.intro)}</p>
+    ${t.notes.length?`<div class="note"><strong>Next steps</strong><ul>${t.notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></div>`:""}
+    ${body}
+    ${parked}
+    <h3>Relics <span class="count">${t.relics.length}</span></h3>
+    <div class="cards relics">${t.relics.map(r=>relicHTML(r,t.color)).join("")}</div>
+  </section>`;
+}).join("");
+
+document.getElementById("sharedBody").innerHTML =
+  groupBlock("Starter deck","3 Strike, 3 Defend, Ren, Ten, Zetsu, Hatsu",SHARED.starters,"var(--ink)") +
+  groupBlock("Shared techniques","any type can learn",SHARED.techniques,"var(--ink)") +
+  `<div class="panel"><p><strong>Planned techniques:</strong> ${esc(SHARED.techniquesPlanned)}</p></div>` +
+  groupBlock("Special","",SHARED.special,"var(--ink)") +
+  `<h3>Shared relics <span class="count">${SHARED.relics.length}</span></h3><div class="cards relics">${SHARED.relics.map(r=>relicHTML(r,"var(--ink)")).join("")}</div>`;
+</script>
+</body>
+</html>
