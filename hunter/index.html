@@ -113,8 +113,9 @@ footer{color:var(--muted);font-size:13px}
       <p>Every aura relic gives <strong>3 Nen at the start of combat</strong> and <strong>1 Nen at the end of each turn</strong>.</p>
     </div>
     <div class="panel">
-      <h3>The four principles</h3>
-      <p><strong>Ren</strong> turns aura up, <strong>Ten</strong> holds it in, <strong>Zetsu</strong> shuts it off, and <strong>Hatsu</strong> uses it. Ren, Ten and Zetsu are starter cards that build Nen. Hatsu becomes your aura type's own basic ability.</p>
+      <h3>Your Hatsu</h3>
+      <p>Your one special starter card is <strong>Hatsu</strong>, your personal technique. It starts tiny and grows: the first time you play it each combat, you choose 1 of 3 upgrades. Upgrades get stronger after every third normal fight and after elites and bosses, many come with a downside, and each aura type's choices lean toward its archetype.</p>
+      <p><strong>Ren</strong> (turn aura up), <strong>Ten</strong> (hold it in) and <strong>Zetsu</strong> (shut it off) are learned later as shared techniques.</p>
     </div>
     <div class="panel">
       <h3>Card rewards</h3>
@@ -390,15 +391,26 @@ const STATUSES=[
 
 const SHARED={
  starters:[
-  ["Strike","Attack","1","","Deal 6. Three copies in the starter deck."],
-  ["Defend","Skill","1","","Gain 5 Block. Three copies in the starter deck."],
-  ["Ren","Skill","1","","Gain 3 Nen."],
-  ["Ten","Skill","1","","Gain 5 Block and 1 Nen. Gain 1 more Block for each Nen you have."],
-  ["Zetsu","Skill","0","","You can't spend Nen this turn. Next turn, gain 3 Nen and 1 energy."],
-  ["Hatsu","Varies","1","","Becomes your aura type's basic ability at Water Divination. Enhancement version: deal 8 and gain 1 Nen; if it's your only Attack this turn, gain 1 more."]],
+  ["Strike","Attack","1","","Deal 6. Four copies in the starter deck."],
+  ["Defend","Skill","1","","Gain 5 Block. Four copies in the starter deck."],
+  ["Hatsu","Attack","0","","Deal 1 damage. Gain 1 Block. The first time you play it each combat, choose 1 of 3 upgrades for it. Upgrades last the whole run."]],
+ hatsuTiers:[
+  ["Basic","After normal fights","Small boosts: +damage, +Block, +Nen. Some carry a cost, like losing HP each time you play it."],
+  ["Special","Every third normal fight","New effects: apply Weak or Vulnerable, extra hits, draw a card."],
+  ["Elite","After elites","Big changes: cost becomes X and damage multiplies by X, Retain, or a huge boost that makes it Exhaust."],
+  ["Boss","After bosses","Run-defining: Replay 2 with Exhaust, double all values."]],
+ hatsuDownsides:"Upgrades shouldn't be pure upside. Prices include losing HP when played, a higher Nen cost, Exhaust, Ethereal, or turning into a curse after it's played.",
+ hatsuTest:[
+  ["Sharpen","Basic","+2 damage. Lose 1 HP each time you play Hatsu."],
+  ["Harden","Basic","+2 Block."],
+  ["Balance","Basic","+1 damage and +1 Block."],
+  ["Expose","Special","Hatsu applies 1 Vulnerable. Lose 1 HP each time you play it."],
+  ["Swell","Special and elite","+3 damage and +3 Block."],
+  ["Overdrive","Elite","+6 damage. Hatsu now exhausts when played."],
+  ["Refine","Elite","Remove all of Hatsu's HP loss."]],
  techniques:[
   ["In","Skill","1","","Lose all your Nen. You can't gain Nen this turn or next turn. In 2 turns, gain double the Nen lost, up to 12. Exhaust."]],
- techniquesPlanned:"Gyo, Ken, Ko, En, Ryu and Shu, learned through training. Ideas: Gyo reads enemy intents, En senses each enemy, Ryu converts Block into Nen, Shu powers created cards.",
+ techniquesPlanned:"Ren, Ten and Zetsu (no longer starter cards), plus Gyo, Ken, Ko, En, Ryu and Shu, learned through training. Earlier drafts: Ren gains 3 Nen; Ten gains Block and Nen, more Block the more Nen you hold; Zetsu stops you spending Nen this turn for 3 Nen and 1 energy next turn. Other ideas: Gyo reads enemy intents, En senses each enemy, Ryu converts Block into Nen, Shu powers created cards.",
  special:[
   ["Hunter License","Power","0","","On hold. Innate. At the start of each turn, gain 1 Nen. At rest sites, use the Hunter Website to choose 1 of 3 of your type's signatures. Found through a secret Hunter Exam event or a rare shop slot."]],
  relics:[
@@ -449,7 +461,20 @@ document.getElementById("types").innerHTML=TYPES.map(t=>{
 }).join("");
 
 document.getElementById("sharedBody").innerHTML =
-  groupBlock("Starter deck","3 Strike, 3 Defend, Ren, Ten, Zetsu, Hatsu",SHARED.starters,"var(--ink)") +
+  groupBlock("Starter deck","4 Strike, 4 Defend, Hatsu",SHARED.starters,"var(--ink)") +
+  `<h3>Hatsu: your growing technique <small>· starter card</small></h3>
+   <div class="grid2">
+     <div class="panel">
+       <p>Once per combat, the first time you play Hatsu, choose 1 of 3 upgrades. Which upgrades you're offered depends on the fight, and each aura type's choices lean toward its archetype, so an Enhancer's Hatsu tends toward damage and Strength.</p>
+       <div class="scroll"><table class="t"><thead><tr><th>Tier</th><th>When</th><th>Examples</th></tr></thead><tbody>${SHARED.hatsuTiers.map(r=>`<tr><td><strong>${esc(r[0])}</strong></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div>
+       <div class="note">${esc(SHARED.hatsuDownsides)}</div>
+     </div>
+     <div class="panel">
+       <p><span class="status draft">Test build</span> <span class="muted" style="font-size:13px">Passes the creator's checks. Waiting on a playtest.</span></p>
+       <p>Each upgrade is stored as a run-lasting status on you, like "Hatsu: Power", and Hatsu reads those when played. Upgrades carry over even if Hatsu later changes into a different version.</p>
+       <div class="scroll"><table class="t"><thead><tr><th>Test upgrade</th><th>Tier</th><th>Effect</th></tr></thead><tbody>${SHARED.hatsuTest.map(r=>`<tr><td><strong>${esc(r[0])}</strong></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div>
+     </div>
+   </div>` +
   groupBlock("Shared techniques","any type can learn",SHARED.techniques,"var(--ink)") +
   `<div class="panel"><p><strong>Planned techniques:</strong> ${esc(SHARED.techniquesPlanned)}</p></div>` +
   groupBlock("Special","",SHARED.special,"var(--ink)") +
